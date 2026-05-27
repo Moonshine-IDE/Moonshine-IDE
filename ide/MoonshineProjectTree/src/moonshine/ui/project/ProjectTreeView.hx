@@ -1,8 +1,6 @@
 package moonshine.ui.project;
 
-import actionScripts.valueObjects.ProjectReferenceVO;
 import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.valueObjects.WorkspaceVO;
 import moonshine.data.ProjectTreeViewCollection;
@@ -39,7 +37,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_treeView == null || _treeView.selectedItem == null) {
 			return null;
 		}
-		return cast(_treeView.selectedItem, FileWrapper).file;
+		return cast(_treeView.selectedItem, ProjectTreeViewFileWrapper).file;
 	}
 
 	private function set_selectedFile(value:FileLocation):FileLocation {
@@ -50,7 +48,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_treeView.selectedItem == null) {
 			return null;
 		}
-		return cast(_treeView.selectedItem, FileWrapper).file;
+		return cast(_treeView.selectedItem, ProjectTreeViewFileWrapper).file;
 	}
 
 	public var selectedFiles(get, set):Array<FileLocation>;
@@ -67,9 +65,9 @@ class ProjectTreeView extends LayoutGroup {
 			return null;
 		}
 		if (value != null) {
-			_treeView.selectedItems = value.map(function(item:FileLocation):FileWrapper {
+			_treeView.selectedItems = value.map(function(item:FileLocation):ProjectTreeViewFileWrapper {
 				return findTreeViewItemForLocation(item);
-			}).filter(function(wrapper:FileWrapper):Bool {
+			}).filter(function(wrapper:ProjectTreeViewFileWrapper):Bool {
 				return wrapper != null;
 			});
 		} else {
@@ -141,35 +139,34 @@ class ProjectTreeView extends LayoutGroup {
 		return _workspaces;
 	}
 
-	public var projects:IFlatCollection<ProjectVO>;
-
+	
 	private var _hierarchicalCollection:ProjectTreeViewCollection;
+	private var _roots:IFlatCollection<FileLocation>;
+	private var _projects:IFlatCollection<ProjectVO>;
 
-	private var _dataProvider:IFlatCollection<FileLocation>;
-
-	public var dataProvider(get, set):IFlatCollection<FileLocation>;
-
-	private function get_dataProvider():IFlatCollection<FileLocation> {
-		return _dataProvider;
-	}
-
-	private function set_dataProvider(value:IFlatCollection<FileLocation>):IFlatCollection<FileLocation> {
-		if (_dataProvider == value) {
-			return _dataProvider;
+	public function setRootsAndProjects(roots:IFlatCollection<FileLocation>, projects:IFlatCollection<ProjectVO>):Void {
+		if (_roots == roots && _projects == projects) {
+			return;
 		}
 		if (_hierarchicalCollection != null) {
 			_hierarchicalCollection.removeEventListener(ProjectTreeViewCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
 		}
-		_dataProvider = value;
-		if (value != null) {
-			var roots:Array<FileWrapper> = [];
-			for (item in value) {
-				
-				var projRef = new ProjectReferenceVO();
-				projRef.path = item.fileBridge.nativePath.toString();
-				roots.push(new FileWrapper(item, true, projRef));
+		_projects = projects;
+		_roots = roots;
+
+		if (_roots != null) {
+			var rootFileWrappers:Array<ProjectTreeViewFileWrapper> = [];
+			for (root in _roots) {
+				var foundProject:ProjectVO = null;
+				for (project in _projects) {
+					if (project.folderPath == root.fileBridge.nativePath) {
+						foundProject = project;
+						break;
+					}
+				}
+				rootFileWrappers.push(new ProjectTreeViewFileWrapper(root, true, foundProject));
 			}
-			_hierarchicalCollection = new ProjectTreeViewCollection(roots);
+			_hierarchicalCollection = new ProjectTreeViewCollection(rootFileWrappers);
 		} else {
 			_hierarchicalCollection = null;
 		}
@@ -180,7 +177,6 @@ class ProjectTreeView extends LayoutGroup {
 			_hierarchicalCollection.addEventListener(ProjectTreeViewCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
 			reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_RESET, _hierarchicalCollection.roots.copy());
 		}
-		return _dataProvider;
 	}
 
 	public var projectTreeCookieCallback:() -> Array<Any>;
@@ -219,7 +215,7 @@ class ProjectTreeView extends LayoutGroup {
 		_treeView.layoutData = VerticalLayoutData.fill();
 		_treeView.variant = feathers.controls.TreeView.VARIANT_BORDERLESS;
 		_treeView.dataProvider = _hierarchicalCollection;
-		_treeView.itemToText = function(item:FileWrapper):String {
+		_treeView.itemToText = function(item:ProjectTreeViewFileWrapper):String {
 			return item.name;
 		}
 		_treeView.allowMultipleSelection = true;
@@ -242,7 +238,7 @@ class ProjectTreeView extends LayoutGroup {
 				// from user interaction.
 				return;
 			}
-			var fileWrapper:FileWrapper = Std.downcast(event.state.data, FileWrapper);
+			var fileWrapper:ProjectTreeViewFileWrapper = Std.downcast(event.state.data, ProjectTreeViewFileWrapper);
 			if (fileWrapper == null) {
 				return;
 			}
@@ -259,7 +255,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_treeView == null) {
 			return false;
 		}
-		var wrapper:FileWrapper = findTreeViewItemForLocation(item);
+		var wrapper:ProjectTreeViewFileWrapper = findTreeViewItemForLocation(item);
 		if (wrapper == null) {
 			return false;
 		}
@@ -302,7 +298,7 @@ class ProjectTreeView extends LayoutGroup {
 			var dataProviderCount:Int = _treeView.dataProvider.getLength(location);
 			for (j in 0...dataProviderCount) {
 				location.push(j);
-				var childForOpen:FileWrapper = cast(_treeView.dataProvider.get(location), FileWrapper);
+				var childForOpen:ProjectTreeViewFileWrapper = cast(_treeView.dataProvider.get(location), ProjectTreeViewFileWrapper);
 
 				var folderLastSeparator:Int = childForOpen.nativePath.lastIndexOf(childForOpen.file.fileBridge.separator);
 				var folder:String = childForOpen.nativePath.substring(folderLastSeparator + 1);
@@ -324,18 +320,18 @@ class ProjectTreeView extends LayoutGroup {
 	}
 
 	public function refresh(dir:FileLocation, markAsDeletion:Bool = false):Void {
-		var folders:Array<FileWrapper> = _hierarchicalCollection.roots;
-		var wrappersToSort:Array<FileWrapper> = [];
+		var folders:Array<ProjectTreeViewFileWrapper> = _hierarchicalCollection.roots;
+		var wrappersToSort:Array<ProjectTreeViewFileWrapper> = [];
 		for (fw in folders) {
 			#if (air || sys)
 			if ((dir.fileBridge.nativePath + dir.fileBridge.separator).indexOf(fw.nativePath + dir.fileBridge.separator) != -1) {
-				var tmpFW:FileWrapper = findFileWrapperAgainstFileLocation(fw, dir);
+				var tmpFW:ProjectTreeViewFileWrapper = findFileWrapperAgainstFileLocation(fw, dir);
 				if (tmpFW != null) {
 					if (_treeView.selectedItem != null) {
-						var lastSelectedItem:FileWrapper = Std.downcast(_treeView.selectedItem, FileWrapper);
+						var lastSelectedItem:ProjectTreeViewFileWrapper = Std.downcast(_treeView.selectedItem, ProjectTreeViewFileWrapper);
 						if (tmpFW.nativePath == lastSelectedItem.nativePath
 							|| lastSelectedItem.nativePath.indexOf(tmpFW.nativePath + tmpFW.file.fileBridge.separator) != -1) {
-							_treeView.selectedItem.isDeleting = markAsDeletion;
+							cast(_treeView.selectedItem, ProjectTreeViewFileWrapper).isDeleting = markAsDeletion;
 						}
 					}
 					refreshWrapper(tmpFW);
@@ -344,7 +340,7 @@ class ProjectTreeView extends LayoutGroup {
 				break;
 			}
 			#else
-			var tmpFW:FileWrapper = findFileWrapperAgainstFileLocation(fw, dir);
+			var tmpFW:ProjectTreeViewFileWrapper = findFileWrapperAgainstFileLocation(fw, dir);
 			refreshWrapper(tmpFW);
 			wrappersToSort.push(tmpFW);
 			#end
@@ -352,12 +348,11 @@ class ProjectTreeView extends LayoutGroup {
 
 		while (wrappersToSort.length > 0) {
 			var tmpFW = wrappersToSort.shift();
-			tmpFW.sortChildren();
-			var children:Array<FileWrapper> = tmpFW.children;
+			var children:Array<ProjectTreeViewFileWrapper> = tmpFW.children;
 			if (children != null) {
 				var childCount:Int = children.length;
 				for (i in 0...childCount) {
-					var child:FileWrapper = children[i];
+					var child:ProjectTreeViewFileWrapper = children[i];
 					if (_treeView.dataProvider.isBranch(child) && _treeView.isBranchOpen(child)) {
 						// when calling refreshItem(), all children are
 						// replaced with new FileWrapper instances, so their
@@ -370,7 +365,7 @@ class ProjectTreeView extends LayoutGroup {
 	}
 
 	public function refreshItem(item:FileLocation):Void {
-		var wrapper:FileWrapper = findTreeViewItemForLocation(item);
+		var wrapper:ProjectTreeViewFileWrapper = findTreeViewItemForLocation(item);
 		if (wrapper == null) {
 			return;
 		}
@@ -382,14 +377,14 @@ class ProjectTreeView extends LayoutGroup {
 			return null;
 		}
 
-		for (i in 0...projects.length) {
+		for (i in 0..._projects.length) {
 			if (orByProjectPath == null || orByProjectPath.length == 0) {
-				if (cast(_treeView.selectedItem, FileWrapper).projectReference.path == projects.get(i).folderPath) {
-					return projects.get(i);
+				if (cast(_treeView.selectedItem, ProjectTreeViewFileWrapper).project.folderPath == _projects.get(i).folderPath) {
+					return _projects.get(i);
 				}
 			} else {
-				if (orByProjectPath == projects.get(i).folderPath) {
-					return projects.get(i);
+				if (orByProjectPath == _projects.get(i).folderPath) {
+					return _projects.get(i);
 				}
 			}
 		}
@@ -397,20 +392,20 @@ class ProjectTreeView extends LayoutGroup {
 		return null;
 	}
 
-	private function refreshWrapper(fw:FileWrapper):Void {
+	private function refreshWrapper(fw:ProjectTreeViewFileWrapper):Void {
 		var location:Array<Int> = _treeView.dataProvider.locationOf(fw);
 		if (location == null) {
 			return;
 		}
 
 		_treeView.dataProvider.updateAt(location);
-		fw = Std.downcast(_treeView.dataProvider.get(location), FileWrapper);
+		fw = Std.downcast(_treeView.dataProvider.get(location), ProjectTreeViewFileWrapper);
 
 		if (fw == null) {
 			return;
 		}
 
-		var lastSelectedItem:FileWrapper = Std.downcast(_treeView.selectedItem, FileWrapper);
+		var lastSelectedItem:ProjectTreeViewFileWrapper = Std.downcast(_treeView.selectedItem, ProjectTreeViewFileWrapper);
 		var lastSelectedLocation:Array<Int> = _treeView.selectedLocation;
 		if (!_treeView.dataProvider.isBranch(fw)) {
 			if (lastSelectedItem != null && lastSelectedItem.nativePath == fw.nativePath) {
@@ -418,15 +413,15 @@ class ProjectTreeView extends LayoutGroup {
 			}
 			return;
 		}
-		var openItems:Array<FileWrapper> = cast _treeView.openBranches;
-		var items:Array<FileWrapper> = [fw];
-		var newItems:Array<FileWrapper> = [];
+		var openItems:Array<ProjectTreeViewFileWrapper> = cast _treeView.openBranches;
+		var items:Array<ProjectTreeViewFileWrapper> = [fw];
+		var newItems:Array<ProjectTreeViewFileWrapper> = [];
 		do {
 			for (item in items) {
 				updateChildrenAndOpenItems(item, openItems, newItems);
 			}
 			items.resize(0);
-			var temp:Array<FileWrapper> = items;
+			var temp:Array<ProjectTreeViewFileWrapper> = items;
 			items = newItems;
 			newItems = temp;
 		} while (items.length > 0);
@@ -449,7 +444,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	private function expandWrapper(item:FileWrapper, open:Bool):Void {
+	private function expandWrapper(item:ProjectTreeViewFileWrapper, open:Bool):Void {
 		// get the actual FileWrapper instance used by the collection
 		// because the one passed in may have the same path, but be a
 		// different instance
@@ -490,7 +485,7 @@ class ProjectTreeView extends LayoutGroup {
 		super.update();
 	}
 
-	private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array<FileWrapper>, newItems:Array<FileWrapper>, refreshItem:Bool = true):Void {
+	private function updateChildrenAndOpenItems(fw:ProjectTreeViewFileWrapper, openItems:Array<ProjectTreeViewFileWrapper>, newItems:Array<ProjectTreeViewFileWrapper>, refreshItem:Bool = true):Void {
 		var location:Array<Int> = _treeView.dataProvider.locationOf(fw);
 		if (location == null) {
 			return;
@@ -501,10 +496,10 @@ class ProjectTreeView extends LayoutGroup {
 		var length:Int = _treeView.dataProvider.getLength(location);
 		for (i in 0...length) {
 			location.push(i);
-			var child:FileWrapper = cast(_treeView.dataProvider.get(location), FileWrapper);
+			var child:ProjectTreeViewFileWrapper = cast(_treeView.dataProvider.get(location), ProjectTreeViewFileWrapper);
 			location.pop();
 			for (j in 0...openItems.length) {
-				var openItem:FileWrapper = openItems[j];
+				var openItem:ProjectTreeViewFileWrapper = openItems[j];
 				if (openItem.nativePath == child.nativePath && openItem != child) {
 					openItems[j] = child;
 					newItems.push(child);
@@ -514,24 +509,24 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	private function setSelectedItem(fw:FileWrapper):Void {
-		var filew:FileWrapper = null;
-		var folders:Array<FileWrapper> = _hierarchicalCollection.roots;
+	private function setSelectedItem(fw:ProjectTreeViewFileWrapper):Void {
+		var filew:ProjectTreeViewFileWrapper = null;
+		var folders:Array<ProjectTreeViewFileWrapper> = _hierarchicalCollection.roots;
 		if (folders.length > 1) {
 			for (i in 0...folders.length) {
-				if (fw.nativePath.indexOf(Std.downcast(folders[i], FileWrapper).nativePath) >= 0) {
-					filew = Std.downcast(folders[i], FileWrapper);
+				if (fw.nativePath.indexOf(Std.downcast(folders[i], ProjectTreeViewFileWrapper).nativePath) >= 0) {
+					filew = Std.downcast(folders[i], ProjectTreeViewFileWrapper);
 					break;
 				}
 			}
 		} else {
-			filew = Std.downcast(_hierarchicalCollection.get([0]), FileWrapper);
+			filew = Std.downcast(_hierarchicalCollection.get([0]), ProjectTreeViewFileWrapper);
 		}
 
 		_treeView.selectedItem = findTreeViewItem(filew);
 	}
 
-	private function findTreeViewItem(itemToFind:FileWrapper):FileWrapper {
+	private function findTreeViewItem(itemToFind:ProjectTreeViewFileWrapper):ProjectTreeViewFileWrapper {
 		if (itemToFind == null) {
 			return null;
 		}
@@ -544,10 +539,10 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		// this may return the item to find, or it might return a
 		// different object that has the same native path
-		return Std.downcast(_treeView.dataProvider.get(location), FileWrapper);
+		return Std.downcast(_treeView.dataProvider.get(location), ProjectTreeViewFileWrapper);
 	}
 
-	private function findTreeViewItemForLocation(itemToFind:FileLocation):FileWrapper {
+	private function findTreeViewItemForLocation(itemToFind:FileLocation):ProjectTreeViewFileWrapper {
 		if (itemToFind == null) {
 			return null;
 		}
@@ -561,7 +556,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		// this may return the item to find, or it might return a
 		// different object that has the same native path
-		return Std.downcast(_treeView.dataProvider.get(location), FileWrapper);
+		return Std.downcast(_treeView.dataProvider.get(location), ProjectTreeViewFileWrapper);
 	}
 
 	private function handleClose(event:Event):Void {
@@ -580,7 +575,7 @@ class ProjectTreeView extends LayoutGroup {
 	}
 
 	private function fileDoubleClickedInTreeView(event:TreeViewEvent):Void {
-		var item:FileWrapper = Std.downcast(event.state.data, FileWrapper);
+		var item:ProjectTreeViewFileWrapper = Std.downcast(event.state.data, ProjectTreeViewFileWrapper);
 		if (_treeView.dataProvider.isBranch(item)) {
 			// don't ignore tree branch changes here!
 			// this is a user interaction and the opened or closed
@@ -595,8 +590,9 @@ class ProjectTreeView extends LayoutGroup {
 				}
 			}
 		} else {
-			if (item.file.fileBridge.isDirectory || item.isWorking)
+			if (item.file.fileBridge.isDirectory) {
 				return;
+			}
 
 			dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_OPEN_FILE, item.file));
 		}
@@ -606,7 +602,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_ignoreTreeBranchChanges) {
 			return;
 		}
-		var item:FileWrapper = Std.downcast(event.state.data, FileWrapper);
+		var item:ProjectTreeViewFileWrapper = Std.downcast(event.state.data, ProjectTreeViewFileWrapper);
 		if (item != null) {
 			saveItemForOpen(item);
 		}
@@ -616,7 +612,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_ignoreTreeBranchChanges) {
 			return;
 		}
-		var item:FileWrapper = cast(event.state.data, FileWrapper);
+		var item:ProjectTreeViewFileWrapper = cast(event.state.data, ProjectTreeViewFileWrapper);
 		if (item != null) {
 			removeFromOpenedItems(item);
 		}
@@ -630,8 +626,8 @@ class ProjectTreeView extends LayoutGroup {
 		if (item == null || !_treeView.isBranchOpen(item)) {
 			return;
 		}
-		var openItems:Array<FileWrapper> = cast _treeView.openBranches;
-		var newItems:Array<FileWrapper> = [];
+		var openItems:Array<ProjectTreeViewFileWrapper> = cast _treeView.openBranches;
+		var newItems:Array<ProjectTreeViewFileWrapper> = [];
 		updateChildrenAndOpenItems(item, openItems, newItems, false);
 		var oldIgnoreTreeBranchChanges:Bool = _ignoreTreeBranchChanges;
 		_ignoreTreeBranchChanges = true;
@@ -669,11 +665,11 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	private function saveItemForOpen(item:FileWrapper):Void {
+	private function saveItemForOpen(item:ProjectTreeViewFileWrapper):Void {
 		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, item.file));
 	}
 
-	private function removeFromOpenedItems(item:FileWrapper):Void {
+	private function removeFromOpenedItems(item:ProjectTreeViewFileWrapper):Void {
 		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, item.file));
 	}
 
@@ -683,7 +679,7 @@ class ProjectTreeView extends LayoutGroup {
 
 		var projectTree:Array<Any> = projectTreeCookieCallback();
 		if (projectTree != null && items.length > 0) {
-			var fileWrapper:FileWrapper = Std.downcast(items.shift(), FileWrapper);
+			var fileWrapper:ProjectTreeViewFileWrapper = Std.downcast(items.shift(), ProjectTreeViewFileWrapper);
 			if (fileWrapper != null && _treeView.dataProvider.isBranch(fileWrapper)) {
 				var open:Bool = _treeView.openBranches.indexOf(fileWrapper) != -1;
 				if (!open) {
@@ -694,7 +690,6 @@ class ProjectTreeView extends LayoutGroup {
 					});
 					if (hasItemForOpen) {
 						expandWrapper(fileWrapper, true);
-						fileWrapper.sortChildren();
 					}
 				}
 			}
@@ -715,21 +710,19 @@ class ProjectTreeView extends LayoutGroup {
 		_treeView.dataProvider.updateAt(location);
 	}
 	
-	private function createFileWrapper(item:FileLocation):FileWrapper
+	private function createFileWrapper(item:FileLocation):ProjectTreeViewFileWrapper
 	{
-		var projectReference:ProjectReferenceVO = null;
-		for (i in 0..._dataProvider.length) {
-			var root = _dataProvider.get(i);
-			if (StringTools.startsWith(item.fileBridge.nativePath, root.fileBridge.nativePath + root.fileBridge.separator)) {
-				projectReference = new ProjectReferenceVO();
-				projectReference.path = root.fileBridge.nativePath;
+		var foundProject:ProjectVO = null;
+		for (project in _projects) {
+			if (StringTools.startsWith(item.fileBridge.nativePath, project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator)) {
+				foundProject = project;
 				break;
 			}
 		}
-		return new FileWrapper(item, false, projectReference, false);
+		return new ProjectTreeViewFileWrapper(item, false, foundProject);
 	}
 
-	private function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper {
+	private function findFileWrapperAgainstFileLocation(current:ProjectTreeViewFileWrapper, target:FileLocation):ProjectTreeViewFileWrapper {
 		// Recurse-find filewrapper child
 		for (child in current.children) {
 			if (target.fileBridge.nativePath == child.nativePath

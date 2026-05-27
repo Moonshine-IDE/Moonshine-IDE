@@ -242,9 +242,7 @@ package actionScripts.plugin.project
 			{
 				return root.file;
 			});
-			treeView.dataProvider = new ArrayCollection(roots);
-
-			treeView.projects = new FlexListCollection(model.projects);
+			treeView.setRootsAndProjects(new ArrayCollection(roots), new FlexListCollection(model.projects));
 		}
 
 		private function setFeathersWorkspaceData(workspaces:ArrayList):void

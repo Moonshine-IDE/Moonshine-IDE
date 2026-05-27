@@ -41,4 +41,6 @@ extern class ProjectVO {
 	public var sourceFolder:FileLocation;
 	public var menuType:String;
 	public var folderPath:String;
+	
+	public function new(folder:FileLocation, ?projectName:String=null, ?updateToTreeView:Bool=true);
 }

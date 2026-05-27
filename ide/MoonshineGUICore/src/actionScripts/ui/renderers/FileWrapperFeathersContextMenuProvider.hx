@@ -32,6 +32,7 @@
 
 package actionScripts.ui.renderers;
 
+import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
 import moonshine.ui.project.ProjectTreeView;
 import actionScripts.interfaces.IExternalEditorVO;
 import actionScripts.locator.IDEModel;
@@ -41,7 +42,6 @@ import actionScripts.plugin.templating.TemplatingHelper;
 import actionScripts.plugin.templating.TemplatingPlugin;
 import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.ConstantsCoreVO;
-import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import components.views.project.ProjectTreeContextMenuItem;
 import feathers.controls.Menu;
@@ -75,7 +75,7 @@ class FileWrapperFeathersContextMenuProvider {
 	}
 	
 	public function provide(data:Dynamic):Menu {
-		var fw:FileWrapper = Std.downcast(itemRenderer.data, FileWrapper);
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
 		if (fw == null)
 		{
 			return null;
@@ -108,7 +108,7 @@ class FileWrapperFeathersContextMenuProvider {
 		menu.itemToSeparator = (item:MenuItem) -> item.separator == true;
 		menu.itemToEnabled = (item:MenuItem) -> item.enabled != false;
 
-		var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
+		var project:ProjectVO = fw.project;
 
 		var items:Array<MenuItem> = [];
 		items.push(getContextMenuItem(ProjectTreeContextMenuItem.COPY_PATH, redispatch, updateOverMultiSelectionOption));
@@ -146,7 +146,7 @@ class FileWrapperFeathersContextMenuProvider {
 
 		if (model.showHiddenPaths)
 		{
-			if (fw.isHidden)
+			if (fw.file.fileBridge.isHidden)
 			{
 				items.push(getContextMenuItem(ProjectTreeContextMenuItem.MARK_AS_VISIBLE, redispatch));
 			}
@@ -241,7 +241,7 @@ class FileWrapperFeathersContextMenuProvider {
 		}
 		else
 		{
-			if (ConstantsCoreVO.IS_AIR && !fw.projectReference.isTemplate)
+			if (ConstantsCoreVO.IS_AIR && !fw.project.projectFolder.projectReference.isTemplate)
 			{
 				items.push(getContextMenuItem(
 					ConstantsCoreVO.IS_AIR ? ProjectTreeContextMenuItem.SETTINGS : ProjectTreeContextMenuItem.PROJECT_SETUP,
@@ -250,7 +250,7 @@ class FileWrapperFeathersContextMenuProvider {
 			items.push(getContextMenuItem(ProjectTreeContextMenuItem.CLOSE, redispatch));
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (!fw.projectReference.isTemplate)
+				if (!fw.project.projectFolder.projectReference.isTemplate)
 				{
 					items.push({separator: true});
 					items.push(getContextMenuItem(ProjectTreeContextMenuItem.DELETE, redispatch));
@@ -277,7 +277,8 @@ class FileWrapperFeathersContextMenuProvider {
 	{
 		var items:Array<MenuItem> = [];
 		
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -289,7 +290,7 @@ class FileWrapperFeathersContextMenuProvider {
 			var isFileTypeAccessible:Bool = (editor.fileTypes == null || editor.fileTypes.length == 0);
 			if (!isFileTypeAccessible)
 			{
-				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, FileWrapper).file.fileBridge.extension) != -1);
+				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper).file.fileBridge.extension) != -1);
 			}
 
 			var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
@@ -347,7 +348,8 @@ class FileWrapperFeathersContextMenuProvider {
 		var items:Array<MenuItem> = [];
 
 		var isVagrantAvailable:Bool = UtilsCore.isVagrantAvailable();
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -380,7 +382,8 @@ class FileWrapperFeathersContextMenuProvider {
 	{
 		var items:Array<MenuItem> = [];
 
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -482,7 +485,7 @@ class FileWrapperFeathersContextMenuProvider {
 		var type:String = event.state.text;
 		var e:ProjectTreeViewMenuItemEvent = new ProjectTreeViewMenuItemEvent(ProjectTreeViewMenuItemEvent.CONTEXT_MENU_ITEM_SELECTED, 
 			type, 
-			cast(itemRenderer.data, FileWrapper).file);
+			cast(itemRenderer.data, ProjectTreeViewFileWrapper).file);
 		return e;
 	}
 }

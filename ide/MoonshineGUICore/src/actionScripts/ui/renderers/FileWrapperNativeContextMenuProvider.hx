@@ -32,6 +32,7 @@
 
 package actionScripts.ui.renderers;
 
+import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
 import moonshine.ui.project.ProjectTreeView;
 import moonshine.events.ProjectTreeViewMenuItemEvent;
 import moonshine.events.ProjectTreeViewEvent;
@@ -44,7 +45,6 @@ import actionScripts.plugin.templating.TemplatingHelper;
 import actionScripts.plugin.templating.TemplatingPlugin;
 import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.ConstantsCoreVO;
-import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import components.views.project.ProjectTreeContextMenuItem;
 import feathers.controls.TreeView;
@@ -65,7 +65,7 @@ class FileWrapperNativeContextMenuProvider {
 	}
 
 	public function provide(data:Dynamic):#if flash flash.ui.ContextMenu #else Dynamic #end {
-		var fw:FileWrapper = Std.downcast(itemRenderer.data, FileWrapper);
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
 		if (fw == null)
 		{
 			return null;
@@ -74,7 +74,7 @@ class FileWrapperNativeContextMenuProvider {
 
 		var contextMenu = model.contextMenuCore.getContextMenu();
 
-		var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
+		var project:ProjectVO = fw.project;
 
 		model.contextMenuCore.addItem(contextMenu,
 			model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.COPY_PATH, updateOverMultiSelectionOption, "displaying"));
@@ -112,14 +112,14 @@ class FileWrapperNativeContextMenuProvider {
 			model.contextMenuCore.addItem(contextMenu, newMenu);
 		}
 		
-		if (fw.sourceController != null)
+		if (fw.project.projectFolder.sourceController != null)
 		{
-			model.contextMenuCore.addItem(contextMenu, fw.sourceController.getTreeRightClickMenu(fw.file));
+			model.contextMenuCore.addItem(contextMenu, fw.project.projectFolder.sourceController.getTreeRightClickMenu(fw.file));
 		}
 
 		if (model.showHiddenPaths)
 		{
-			if (fw.isHidden)
+			if (fw.file.fileBridge.isHidden)
 			{
 				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.MARK_AS_VISIBLE, redispatch, Event.SELECT));
 			}
@@ -207,14 +207,17 @@ class FileWrapperNativeContextMenuProvider {
 		}
 		else
 		{
-			if (ConstantsCoreVO.IS_AIR && !fw.projectReference.isTemplate)
+			if (ConstantsCoreVO.IS_AIR)
 			{
-				model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? ProjectTreeContextMenuItem.SETTINGS : ProjectTreeContextMenuItem.PROJECT_SETUP, redispatch, Event.SELECT));
+				if (!fw.project.projectFolder.projectReference.isTemplate)
+				{
+					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? ProjectTreeContextMenuItem.SETTINGS : ProjectTreeContextMenuItem.PROJECT_SETUP, redispatch, Event.SELECT));
+				}
 			}
 			model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.CLOSE, redispatch, Event.SELECT));
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (!fw.projectReference.isTemplate)
+				if (!fw.project.projectFolder.projectReference.isTemplate)
 				{
 					// for some reason separatorBefore is not working through Constructor in desktop hence this separate null entry addition
 					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
@@ -240,7 +243,8 @@ class FileWrapperNativeContextMenuProvider {
 	{
 		model.contextMenuCore.removeAll(event.target);
 		
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -252,7 +256,7 @@ class FileWrapperNativeContextMenuProvider {
 			var isFileTypeAccessible:Bool = (editor.fileTypes == null || editor.fileTypes.length == 0);
 			if (!isFileTypeAccessible)
 			{
-				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, FileWrapper).file.fileBridge.extension) != -1);
+				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper).file.fileBridge.extension) != -1);
 			}
 
 			var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
@@ -304,7 +308,9 @@ class FileWrapperNativeContextMenuProvider {
 		model.contextMenuCore.removeAll(event.target);
 
 		var isVagrantAvailable:Bool = UtilsCore.isVagrantAvailable();
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -334,7 +340,8 @@ class FileWrapperNativeContextMenuProvider {
 	{
 		model.contextMenuCore.removeAll(e.target);
 
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(itemRenderer.data, ProjectTreeViewFileWrapper);
+		var activeProject:ProjectVO = fw.project;
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -433,7 +440,7 @@ class FileWrapperNativeContextMenuProvider {
 		var type:String = (event.target is flash.ui.ContextMenuItem) ? event.target.caption : event.target.label;
 		var e:ProjectTreeViewMenuItemEvent = new ProjectTreeViewMenuItemEvent(ProjectTreeViewMenuItemEvent.CONTEXT_MENU_ITEM_SELECTED, 
 			type, 
-			cast(itemRenderer.data, FileWrapper).file);
+			cast(itemRenderer.data, ProjectTreeViewFileWrapper).file);
 		return e;
 	}
 }

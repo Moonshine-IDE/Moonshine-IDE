@@ -36,15 +36,15 @@
 
 package moonshine.events;
 
-import actionScripts.valueObjects.FileWrapper;
+import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
 import openfl.events.Event;
 
 class ProjectTreeViewCollectionEvent extends Event {
 	public static final DIRECTORY_LISTING_RECEIVED:String = "directoryListingReceived";
 
-	public var fileWrapper:FileWrapper;
+	public var fileWrapper:ProjectTreeViewFileWrapper;
 
-	public function new(type:String, fileWrapper:FileWrapper = null) {
+	public function new(type:String, fileWrapper:ProjectTreeViewFileWrapper = null) {
 		super(type, false, false);
 		this.fileWrapper = fileWrapper;
 	}

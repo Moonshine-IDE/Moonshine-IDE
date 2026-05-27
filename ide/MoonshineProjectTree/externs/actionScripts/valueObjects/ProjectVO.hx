@@ -35,6 +35,8 @@ package actionScripts.valueObjects;
 import actionScripts.factory.FileLocation;
 
 extern class ProjectVO {
-	public var projectFolder:FileWrapper;
+	public var folderLocation:FileLocation;
 	public var folderPath:String;
+	
+	public function new(folder:FileLocation, ?projectName:String=null, ?updateToTreeView:Bool=true);
 }

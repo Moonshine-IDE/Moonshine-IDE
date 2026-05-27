@@ -32,10 +32,10 @@
 
 package moonshine.data;
 
+import actionScripts.valueObjects.ProjectVO;
 import actionScripts.factory.FileLocation;
 import openfl.errors.IOError;
 import openfl.errors.RangeError;
-import actionScripts.valueObjects.FileWrapper;
 import feathers.data.IHierarchicalCollection;
 import feathers.events.FeathersEvent;
 import feathers.events.HierarchicalCollectionEvent;
@@ -45,8 +45,8 @@ import openfl.errors.Error;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
 
-class ProjectTreeViewCollection extends EventDispatcher implements IHierarchicalCollection<FileWrapper> {
-	private static function defaultSortCompareFunction(a:FileWrapper, b:FileWrapper):Int {
+class ProjectTreeViewCollection extends EventDispatcher implements IHierarchicalCollection<ProjectTreeViewFileWrapper> {
+	private static function defaultSortCompareFunction(a:ProjectTreeViewFileWrapper, b:ProjectTreeViewFileWrapper):Int {
 		if (a.file.fileBridge.isDirectory && !b.file.fileBridge.isDirectory) {
 			return -1;
 		}
@@ -62,23 +62,23 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return 0;
 	}
 
-	public function new(?roots:Array<FileWrapper>) {
+	public function new(?roots:Array<ProjectTreeViewFileWrapper>) {
 		super();
 		this.roots = roots;
 	}
 
-	private var _childrenMap:Map<String, Array<FileWrapper>> = [];
+	private var _childrenMap:Map<String, Array<ProjectTreeViewFileWrapper>> = [];
 	private var _pendingDirectoryListings:Map<String, Bool> = [];
 
-	private var _roots:Array<FileWrapper>;
+	private var _roots:Array<ProjectTreeViewFileWrapper>;
 
-	public var roots(get, set):Array<FileWrapper>;
+	public var roots(get, set):Array<ProjectTreeViewFileWrapper>;
 
-	private function get_roots():Array<FileWrapper> {
+	private function get_roots():Array<ProjectTreeViewFileWrapper> {
 		return _roots;
 	}
 
-	private function set_roots(value:Array<FileWrapper>):Array<FileWrapper> {
+	private function set_roots(value:Array<ProjectTreeViewFileWrapper>):Array<ProjectTreeViewFileWrapper> {
 		if (_roots == value) {
 			return _roots;
 		}
@@ -93,19 +93,19 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return _roots;
 	}
 
-	private var _filterFunction:(FileWrapper) -> Bool = null;
+	private var _filterFunction:(ProjectTreeViewFileWrapper) -> Bool = null;
 
 	/**
 		@see `feathers.data.IHierarchicalCollection.filterFunction`
 	**/
 	@:bindable("filterChange")
-	public var filterFunction(get, set):(FileWrapper) -> Bool;
+	public var filterFunction(get, set):(ProjectTreeViewFileWrapper) -> Bool;
 
-	private function get_filterFunction():(FileWrapper) -> Bool {
+	private function get_filterFunction():(ProjectTreeViewFileWrapper) -> Bool {
 		return _filterFunction;
 	}
 
-	private function set_filterFunction(value:(FileWrapper) -> Bool):(FileWrapper) -> Bool {
+	private function set_filterFunction(value:(ProjectTreeViewFileWrapper) -> Bool):(ProjectTreeViewFileWrapper) -> Bool {
 		if (_filterFunction == value) {
 			return _filterFunction;
 		}
@@ -117,19 +117,19 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return _filterFunction;
 	}
 
-	private var _sortCompareFunction:(FileWrapper, FileWrapper) -> Int = defaultSortCompareFunction;
+	private var _sortCompareFunction:(ProjectTreeViewFileWrapper, ProjectTreeViewFileWrapper) -> Int = defaultSortCompareFunction;
 
 	/**
 		@see `feathers.data.IHierarchicalCollection.sortCompareFunction`
 	**/
 	@:bindable("sortChange")
-	public var sortCompareFunction(get, set):(FileWrapper, FileWrapper) -> Int;
+	public var sortCompareFunction(get, set):(ProjectTreeViewFileWrapper, ProjectTreeViewFileWrapper) -> Int;
 
-	private function get_sortCompareFunction():(FileWrapper, FileWrapper) -> Int {
+	private function get_sortCompareFunction():(ProjectTreeViewFileWrapper, ProjectTreeViewFileWrapper) -> Int {
 		return _sortCompareFunction;
 	}
 
-	private function set_sortCompareFunction(value:(FileWrapper, FileWrapper) -> Int):(FileWrapper, FileWrapper) -> Int {
+	private function set_sortCompareFunction(value:(ProjectTreeViewFileWrapper, ProjectTreeViewFileWrapper) -> Int):(ProjectTreeViewFileWrapper, ProjectTreeViewFileWrapper) -> Int {
 		if (value == null) {
 			value = defaultSortCompareFunction;
 		}
@@ -176,14 +176,14 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		@see `feathers.data.IHierarchicalCollection.get`
 	**/
 	@:bindable("change")
-	public function get(location:Array<Int>):FileWrapper {
+	public function get(location:Array<Int>):ProjectTreeViewFileWrapper {
 		return getItemAtLocation(location);
 	}
 
 	/**
 		@see `feathers.data.IHierarchicalCollection.isBranch`
 	**/
-	public function isBranch(item:FileWrapper):Bool {
+	public function isBranch(item:ProjectTreeViewFileWrapper):Bool {
 		if (item == null || !item.file.fileBridge.exists) {
 			return false;
 		}
@@ -193,12 +193,12 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	/**
 		@see `feathers.data.IHierarchicalCollection.locationOf`
 	**/
-	public function locationOf(item:FileWrapper):Array<Int> {
+	public function locationOf(item:ProjectTreeViewFileWrapper):Array<Int> {
 		var location:Array<Int> = [];
 		if (item == null) {
 			return null;
 		}
-		var current:FileWrapper = item;
+		var current:ProjectTreeViewFileWrapper = item;
 		while (current != null) {
 			for (i in 0..._roots.length) {
 				var root = _roots[i];
@@ -211,7 +211,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 			if (parentFileLocation == null || !parentFileLocation.fileBridge.isDirectory) {
 				break;
 			}
-			var parentWrapper = new FileWrapper(parentFileLocation, false, current.projectReference, false);
+			var parentWrapper = new ProjectTreeViewFileWrapper(parentFileLocation, false, current.project);
 			var filesInParent = getChildren(parentWrapper);
 			if (filesInParent == null) {
 				return null;
@@ -231,14 +231,14 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	/**
 		@see `feathers.data.IHierarchicalCollection.locationOf`
 	**/
-	public function contains(item:FileWrapper):Bool {
+	public function contains(item:ProjectTreeViewFileWrapper):Bool {
 		return locationOf(item) != null;
 	}
 
 	/**
 		@see `feathers.data.IHierarchicalCollection.set`
 	**/
-	public function set(location:Array<Int>, value:FileWrapper):Void {
+	public function set(location:Array<Int>, value:ProjectTreeViewFileWrapper):Void {
 		if (location.length == 1) {
 			var index = location[0];
 			var oldValue = _roots[index];
@@ -252,7 +252,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	/**
 		@see `feathers.data.IHierarchicalCollection.addAt`
 	**/
-	public function addAt(itemToAdd:FileWrapper, location:Array<Int>):Void {
+	public function addAt(itemToAdd:ProjectTreeViewFileWrapper, location:Array<Int>):Void {
 		if (location.length == 1) {
 			var index = location[0];
 			_roots.insert(index, itemToAdd);
@@ -265,7 +265,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	/**
 		@see `feathers.data.IHierarchicalCollection.removeAt`
 	**/
-	public function removeAt(location:Array<Int>):FileWrapper {
+	public function removeAt(location:Array<Int>):ProjectTreeViewFileWrapper {
 		if (location.length == 1) {
 			var index = location[0];
 			var oldValue = _roots[index];
@@ -279,7 +279,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	/**
 		@see `feathers.data.IHierarchicalCollection.remove`
 	**/
-	public function remove(item:FileWrapper):Void {
+	public function remove(item:ProjectTreeViewFileWrapper):Void {
 		throw new Error("not supported");
 	}
 
@@ -297,7 +297,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		var item = getItemAtLocation(location, true, false);
 		if (item != null) {
 			// clear from the cache, if possible
-			var items:Array<FileWrapper> = [item];
+			var items:Array<ProjectTreeViewFileWrapper> = [item];
 			while (items.length > 0) {
 				var current = items.shift();
 				this.removeFromCache(current, items);
@@ -306,11 +306,11 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.UPDATE_ITEM, location);
 	}
 
-	public function updateItem(item:FileWrapper):Void {
+	public function updateItem(item:ProjectTreeViewFileWrapper):Void {
 		if (item == null) {
 			return;
 		}
-		var items:Array<FileWrapper> = [item];
+		var items:Array<ProjectTreeViewFileWrapper> = [item];
 		while (items.length > 0) {
 			var current = items.shift();
 			this.removeFromCache(current, items);
@@ -339,7 +339,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		_pendingDirectoryListings.clear();
 	}
 
-	private function getItemAtLocation(location:Array<Int>, useCache:Bool = true, validate:Bool = true):FileWrapper {
+	private function getItemAtLocation(location:Array<Int>, useCache:Bool = true, validate:Bool = true):ProjectTreeViewFileWrapper {
 		if (location == null || location.length == 0) {
 			return null;
 		}
@@ -351,7 +351,7 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 				return null;
 			}
 		}
-		var current:FileWrapper = _roots[rootIndex];
+		var current:ProjectTreeViewFileWrapper = _roots[rootIndex];
 		var i = 1;
 		while (i < location.length) {
 			if (!current.file.fileBridge.isDirectory) {
@@ -389,8 +389,8 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return current;
 	}
 
-	private function getChildren(fileWrapper:FileWrapper, useCache:Bool = true):Array<FileWrapper> {
-		var children:Array<FileWrapper> = null;
+	private function getChildren(fileWrapper:ProjectTreeViewFileWrapper, useCache:Bool = true):Array<ProjectTreeViewFileWrapper> {
+		var children:Array<ProjectTreeViewFileWrapper> = null;
 		if (useCache) {
 			children = _childrenMap.get(fileWrapper.nativePath);
 			if (children != null) {
@@ -409,14 +409,16 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return children;
 	}
 
-	private function loadChildrenAsync(fileWrapper:FileWrapper, useCache:Bool):Void {
+	private function loadChildrenAsync(fileWrapper:ProjectTreeViewFileWrapper, useCache:Bool):Void {
 		var nativePath = fileWrapper.nativePath;
 		if (_pendingDirectoryListings.exists(nativePath)) {
 			return;
 		}
 		_pendingDirectoryListings.set(nativePath, true);
+		fileWrapper.isWorking = true;
 		fileWrapper.file.fileBridge.getDirectoryListingAsync(function(directoryListing:Array<FileLocation>):Void {
 			_pendingDirectoryListings.remove(nativePath);
+			fileWrapper.isWorking = false;
 			var children = createChildren(fileWrapper, directoryListing);
 			if (useCache) {
 				_childrenMap.set(nativePath, children);
@@ -429,17 +431,26 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 			}
 		}, function(error:String):Void {
 			_pendingDirectoryListings.remove(nativePath);
+			fileWrapper.isWorking = false;
 		});
 	}
 
-	private function createChildren(fileWrapper:FileWrapper, directoryListing:Array<FileLocation>):Array<FileWrapper> {
-		var children:Array<FileWrapper> = [];
+	private function createChildren(fileWrapper:ProjectTreeViewFileWrapper, directoryListing:Array<FileLocation>):Array<ProjectTreeViewFileWrapper> {
+		var children:Array<ProjectTreeViewFileWrapper> = [];
 		if (directoryListing == null) {
 			return children;
 		}
-		var projectReference = fileWrapper.projectReference;
-		var showHiddenPaths:Bool = projectReference != null && Reflect.getProperty(projectReference, "showHiddenPaths") == true;
-		var hiddenPaths:Dynamic = projectReference == null ? null : Reflect.getProperty(projectReference, "hiddenPaths");
+		var project = fileWrapper.project;
+		var showHiddenPaths:Bool = false;
+		if (project != null
+				&& (Reflect.hasField(project, "showHiddenPaths") || Reflect.hasField(project, "get_showHiddenPaths"))) {
+			showHiddenPaths = Reflect.getProperty(project, "showHiddenPaths") == true;
+		}
+		var hiddenPaths:Array<FileLocation> = null;
+		if (project != null
+				&& (Reflect.hasField(project, "hiddenPaths") || Reflect.hasField(project, "get_hiddenPaths"))) {
+			hiddenPaths = Std.downcast(Reflect.getProperty(project, "hiddenPaths"), Array);
+		}
 		for (currentFile in directoryListing) {
 			if (currentFile.fileBridge.isHidden) {
 				continue;
@@ -447,11 +458,10 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 			if (!showHiddenPaths && isProjectHiddenPath(hiddenPaths, currentFile)) {
 				continue;
 			}
-			var child = new FileWrapper(currentFile, false, projectReference, false);
+			var child = new ProjectTreeViewFileWrapper(currentFile, false, project);
 			child.children = [];
-			Reflect.setProperty(child, "sourceController", Reflect.getProperty(fileWrapper, "sourceController"));
 			if (child.file.fileBridge.isDirectory) {
-				child.isSourceFolder = isSourceFolder(child, projectReference);
+				child.isSourceFolder = isSourceFolder(child, project);
 			}
 			children.push(child);
 		}
@@ -469,17 +479,13 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return children;
 	}
 
-	private function isProjectHiddenPath(hiddenPaths:Dynamic, currentFile:FileLocation):Bool {
+	private function isProjectHiddenPath(hiddenPaths:Array<FileLocation>, currentFile:FileLocation):Bool {
 		if (hiddenPaths == null) {
 			return false;
 		}
 		var currentNativePath = currentFile.fileBridge.nativePath;
-		var length:Null<Int> = Reflect.getProperty(hiddenPaths, "length");
-		if (length == null) {
-			return false;
-		}
-		for (i in 0...length) {
-			var hiddenFile:FileLocation = untyped hiddenPaths[i];
+		for (i in 0...hiddenPaths.length) {
+			var hiddenFile:FileLocation = hiddenPaths[i];
 			if (hiddenFile != null && hiddenFile.fileBridge.nativePath == currentNativePath) {
 				return true;
 			}
@@ -487,18 +493,18 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 		return false;
 	}
 
-	private function isSourceFolder(wrapper:FileWrapper, projectReference:Dynamic):Bool {
-		if (projectReference == null) {
+	private function isSourceFolder(wrapper:ProjectTreeViewFileWrapper, project:ProjectVO):Bool {
+		if (project == null || (!Reflect.hasField(project, "sourceFolder") && !Reflect.hasField(project, "get_sourceFolder"))) {
 			return false;
 		}
-		var sourceFolder:FileLocation = Reflect.getProperty(projectReference, "sourceFolder");
+		var sourceFolder:FileLocation = Std.downcast(Reflect.getProperty(project, "sourceFolder"), FileLocation);
 		if (sourceFolder == null) {
 			return false;
 		}
 		return wrapper.nativePath == sourceFolder.fileBridge.nativePath;
 	}
 
-	private function removeFromCache(item:FileWrapper, items:Array<FileWrapper>):Void {
+	private function removeFromCache(item:ProjectTreeViewFileWrapper, items:Array<ProjectTreeViewFileWrapper>):Void {
 		if (item == null) {
 			return;
 		}	
@@ -511,4 +517,37 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 			}
 		}
 	}
+}
+
+class ProjectTreeViewFileWrapper {
+	public function new(file:FileLocation, isRoot:Bool, project:ProjectVO) {
+		this.file = file;
+		this.isRoot = isRoot;
+		this.project = project;
+	}
+
+	public var file(default, null):FileLocation;
+
+	public var project(default, null):ProjectVO;
+
+	public var isRoot(default, null):Bool;
+
+	public var name(get, never):String;
+	private function get_name():String
+	{
+		return file.fileBridge.name;
+	}
+
+	public var nativePath(get, never):String;
+	private function get_nativePath():String
+	{
+		return file.fileBridge.nativePath;
+	}
+
+	public var isSourceFolder:Bool = false;
+
+	public var children:Array<ProjectTreeViewFileWrapper>;
+
+	public var isWorking:Bool = false;
+	public var isDeleting:Bool = false;
 }

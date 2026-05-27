@@ -31,9 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package moonshine.ui.renderers;
 
+import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
 import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import feathers.controls.BitmapImage;
 import feathers.controls.Menu;
 import feathers.controls.TreeView;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
@@ -42,9 +41,7 @@ import feathers.core.IValidating;
 import feathers.text.TextFormat;
 import openfl.display.DisplayObject;
 import openfl.display.MovieClip;
-import openfl.display.Sprite;
 import openfl.events.MouseEvent;
-import openfl.filters.GlowFilter;
 
 class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements ITreeViewItemRenderer {
 	public function new() {
@@ -155,7 +152,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 
 	private function updateTextFormat():Void {
 		runWithInvalidationFlagsOnly(() -> {
-			var fw:FileWrapper = Std.downcast(data, FileWrapper);
+			var fw:ProjectTreeViewFileWrapper = Std.downcast(data, ProjectTreeViewFileWrapper);
 			if (fw == null) {
 				textFormat = _normalTextFormat;
 				return;
@@ -164,7 +161,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 				textFormat = _rootTextFormat;
 			} else if (fw.isDeleting) {
 				textFormat = _deletingTextFormat;
-			} else if (fw.isHidden) {
+			} else if (fw.file.fileBridge.isHidden) {
 				textFormat = _hiddenTextFormat;
 			} else {
 				textFormat = _normalTextFormat;
@@ -204,7 +201,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 	}
 
 	private function updateToolTip():Void {
-		var fw:FileWrapper = Std.downcast(data, FileWrapper);
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(data, ProjectTreeViewFileWrapper);
 		if (fw != null) {
 			toolTip = fw.nativePath;
 		} else {
@@ -217,7 +214,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 		this.refreshIsSourceFolderIcon();
 		this.refreshIsLoadingIcon();
 
-		var fw:FileWrapper = Std.downcast(data, FileWrapper);
+		var fw:ProjectTreeViewFileWrapper = Std.downcast(data, ProjectTreeViewFileWrapper);
 		if (fw != null) {
 			if (isOpenIcon != null) {
 				// Show lil' dot if we are the currently opened file
