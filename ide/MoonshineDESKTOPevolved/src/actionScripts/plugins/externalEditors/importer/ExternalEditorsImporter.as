@@ -62,20 +62,39 @@ package actionScripts.plugins.externalEditors.importer
 			var tmpEditor:ExternalEditorVO;
 			var isWindows:Boolean;
 			var isMac:Boolean;
+			var isLinux:Boolean;
+			var platformName:String;
 			for each (var editor:XML in listFileXML..editor)
 			{
 				isWindows = String(editor.@isWindows) == "true" ? true : false;
 				isMac = String(editor.@isMac) == "true" ? true : false;
+				isLinux = String(editor.@isLinux) == "true" ? true : false;
 				 
-				if (ConstantsCoreVO.IS_MACOS && !isMac)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					continue;
+					platformName = "mac";
+					if (!isMac)
+					{
+						continue;
+					}
 				}
-				else if (ConstantsCoreVO.IS_WINDOWS && !isWindows)
+				else if (ConstantsCoreVO.IS_WINDOWS)
 				{
-					continue;
+					platformName = "windows";
+					if (!isWindows)
+					{
+						continue;
+					}
 				} 
-				else if (!ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_WINDOWS)
+				else if (ConstantsCoreVO.IS_LINUX)
+				{
+					platformName = "linux";
+					if (!isLinux)
+					{
+						continue;
+					}
+				} 
+				else if (!ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_WINDOWS && !ConstantsCoreVO.IS_LINUX)
 				{
 					continue;
 				}
@@ -86,11 +105,11 @@ package actionScripts.plugins.externalEditors.importer
 				tmpEditor.fileTypes = (String(editor.fileTypes) != "") ? String(editor.fileTypes).split(",") : [];
 				
 				var installPath:String = checkPath(
-					String(editor.defaultLocation[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf())
+					String(editor.defaultLocation[platformName].valueOf())
 				);
 				if (editor.hasOwnProperty("defaultArguments"))
 				{
-					tmpEditor.extraArguments = String(editor.defaultArguments[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf());
+					tmpEditor.extraArguments = String(editor.defaultArguments[platformName].valueOf());
 				}
 				
 				tmpEditor.installPath = new File(installPath);
