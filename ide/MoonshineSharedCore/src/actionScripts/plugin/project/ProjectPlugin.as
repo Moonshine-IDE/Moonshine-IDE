@@ -106,6 +106,7 @@ package actionScripts.plugin.project
 	import feathers.controls.BitmapImage;
 
 	import moonshine.events.ProjectTreeViewEvent;
+	import moonshine.events.ProjectTreeViewMenuItemEvent;
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	import moonshine.ui.project.ProjectTreeView;
 	import moonshine.ui.renderers.ProjectTreeViewItemRenderer
@@ -149,7 +150,7 @@ package actionScripts.plugin.project
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_OPEN_FILE, onTreeViewOpenFile);
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, onTreeViewSaveToOpenedItems);
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, onTreeViewRemoveFromOpenedItems);
-			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
+			treeView.addEventListener(ProjectTreeViewMenuItemEvent.CONTEXT_MENU_ITEM_SELECTED, handleNativeMenuItemClick);
 			treeView.projectTreeCookieCallback = onTreeViewProjectTreeRequest;
 			treeView.projectTreeCookiePropertyNameKey = PROPERTY_NAME_KEY;
 			treeView.projectTreeCookiePropertyNameKeyValue = PROPERTY_NAME_KEY_VALUE;
@@ -683,7 +684,7 @@ package actionScripts.plugin.project
 
 		private function onTreeViewInitItemRenderer(itemRenderer:ProjectTreeViewItemRenderer):void
 		{
-			new FileWrapperNativeContextMenuProvider(itemRenderer);
+			new FileWrapperNativeContextMenuProvider(itemRenderer, treeView);
 
 			var isOpenIcon:Sprite = new Sprite();
 			isOpenIcon.mouseEnabled = false;
@@ -761,7 +762,7 @@ package actionScripts.plugin.project
 		private function onTreeViewOpenFile(event:ProjectTreeViewEvent):void
 		{
 			var location:FileLocation = event.file;
-			var wrapper:FileWrapper = fileLocationToFileWrapper(location);
+			var wrapper:FileWrapper = fileLocationToFileWrapper(location, true);
 			dispatcher.dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [location], -1, [wrapper])
 			);
@@ -1022,23 +1023,19 @@ package actionScripts.plugin.project
 			}
 		}
 
-		private function handleNativeMenuItemClick(event:TreeMenuItemEvent):void
+		private function handleNativeMenuItemClick(event:ProjectTreeViewMenuItemEvent):void
 		{
-			// Might be some sub-menu provider we're dealing with
-			if(!(event.data is FileWrapper)) return;
-
 			var project:ProjectVO;
-			var fileWrapper:FileWrapper = FileWrapper(event.data);
+			var fileWrapper:FileWrapper = fileLocationToFileWrapper(event.file, true);
 			var isMultiSelection:Boolean;
-			var fw:FileWrapper;
 
 			if((treeView.selectedFiles.length > 1)
-					&& (fileLocationsToFileWrappers(treeView.selectedFiles).indexOf(fileWrapper) != -1))
+					&& (fileLocationsToFileWrappers(treeView.selectedFiles, true).indexOf(fileWrapper) != -1))
 			{
 				isMultiSelection = true;
 			}
 
-			switch (event.menuLabel)
+			switch (event.label)
 			{
 				case ProjectTreeContextMenuItem.SETTINGS:
 				case ProjectTreeContextMenuItem.PROJECT_SETUP:
@@ -1064,7 +1061,7 @@ package actionScripts.plugin.project
 				}
 				case ProjectTreeContextMenuItem.CLOSE:
 				{
-					onFileDeletedOnServer([fileWrapper], event.menuLabel);
+					onFileDeletedOnServer([fileWrapper], event.label);
 					refreshActiveProject(fileWrapper.file);
 					break;
 				}
@@ -1091,7 +1088,7 @@ package actionScripts.plugin.project
 				}
 				case ProjectTreeContextMenuItem.RENAME:
 				{
-					renameFileFolder(event.renderer);
+				dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, fileWrapper));
 					break;
 				}
 				case ProjectTreeContextMenuItem.DUPLICATE_FILE:
@@ -1237,10 +1234,10 @@ package actionScripts.plugin.project
 				{
 					var parentFileWrapper:FileWrapper = UtilsCore.getParentItem(fileWrapper);
 					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(
-						fileLocationToFileWrapper(treeView.selectedFiles[0] as FileLocation));
+						fileLocationToFileWrapper(treeView.selectedFiles[0] as FileLocation, true));
 					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file,
 						isMultiSelection ? fileLocationsToFileWrappers(treeView.selectedFiles) : [fileWrapper],
-						onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+						onFileDeletedOnServer, true, projectAssociatedWithFile));
 					//Alert.show("delete file:"+fileWrapper.file.fileBridge.nativePath);
 					var parentFolder:String=fileWrapper.file.fileBridge.parent.fileBridge.nativePath;
 					//Alert.show("parentFolder file:"+parentFolder);
@@ -1262,15 +1259,6 @@ package actionScripts.plugin.project
 					}
 
 				}
-			}
-
-			/*
-				* @local
-				* Rename file/folder
-				*/
-			function renameFileFolder(rendererObject:ProjectTreeViewItemRenderer):void
-			{
-				dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, rendererObject.data));
 			}
 
 			/*
@@ -1343,7 +1331,7 @@ package actionScripts.plugin.project
 			}
 		}
 
-		private function fileLocationToFileWrapper(location:FileLocation):FileWrapper
+		private function fileLocationToFileWrapper(location:FileLocation, updateChildren:Boolean = false):FileWrapper
 		{
 			var foundProject:ProjectVO = null;
 			for each (var currentProject:ProjectVO in model.projects)
@@ -1359,14 +1347,14 @@ package actionScripts.plugin.project
 				return null;
 			}
 					
-			return UtilsCore.findFileWrapperAgainstFileLocation(currentProject.projectFolder, location);
+			return UtilsCore.findFileWrapperAgainstFileLocation(currentProject.projectFolder, location, updateChildren);
 		}
 
-		private function fileLocationsToFileWrappers(locations:Array):Array
+		private function fileLocationsToFileWrappers(locations:Array, updateChildren:Boolean = false):Array
 		{
 			return locations.map(function(location:FileLocation, index:int, source:Array):FileWrapper
 			{
-				return fileLocationToFileWrapper(location);
+				return fileLocationToFileWrapper(location, updateChildren);
 			}).filter(function(wrapper:FileWrapper, index:int, source:Array):Boolean
 			{
 				return wrapper != null;

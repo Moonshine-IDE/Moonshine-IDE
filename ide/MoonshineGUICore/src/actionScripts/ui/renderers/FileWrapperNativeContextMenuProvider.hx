@@ -32,6 +32,9 @@
 
 package actionScripts.ui.renderers;
 
+import moonshine.ui.project.ProjectTreeView;
+import moonshine.events.ProjectTreeViewMenuItemEvent;
+import moonshine.events.ProjectTreeViewEvent;
 import actionScripts.events.TreeMenuItemEvent;
 import actionScripts.interfaces.IExternalEditorVO;
 import actionScripts.locator.IDEModel;
@@ -51,16 +54,18 @@ import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;
 
 class FileWrapperNativeContextMenuProvider {
-	private var contextMenuOwner:ProjectTreeViewItemRenderer;
+	private var treeView:ProjectTreeView;
+	private var itemRenderer:ProjectTreeViewItemRenderer;
 	private var model:IDEModel = IDEModel.getInstance();
 
-	public function new(target:ProjectTreeViewItemRenderer) {
-		contextMenuOwner = target;
-		contextMenuOwner.nativeContextMenuFactory = provide;
+	public function new(itemRenderer:ProjectTreeViewItemRenderer, treeView:ProjectTreeView) {
+		itemRenderer.nativeContextMenuFactory = provide;
+		this.itemRenderer = itemRenderer;
+		this.treeView = treeView;
 	}
 
 	public function provide(data:Dynamic):#if flash flash.ui.ContextMenu #else Dynamic #end {
-		var fw:FileWrapper = Std.downcast(contextMenuOwner.data, FileWrapper);
+		var fw:FileWrapper = Std.downcast(itemRenderer.data, FileWrapper);
 		if (fw == null)
 		{
 			return null;
@@ -235,7 +240,7 @@ class FileWrapperNativeContextMenuProvider {
 	{
 		model.contextMenuCore.removeAll(event.target);
 		
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -247,7 +252,7 @@ class FileWrapperNativeContextMenuProvider {
 			var isFileTypeAccessible:Bool = (editor.fileTypes == null || editor.fileTypes.length == 0);
 			if (!isFileTypeAccessible)
 			{
-				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(contextMenuOwner.data, FileWrapper).file.fileBridge.extension) != -1);
+				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, FileWrapper).file.fileBridge.extension) != -1);
 			}
 
 			var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
@@ -299,7 +304,7 @@ class FileWrapperNativeContextMenuProvider {
 		model.contextMenuCore.removeAll(event.target);
 
 		var isVagrantAvailable:Bool = UtilsCore.isVagrantAvailable();
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -329,7 +334,7 @@ class FileWrapperNativeContextMenuProvider {
 	{
 		model.contextMenuCore.removeAll(e.target);
 
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -376,60 +381,59 @@ class FileWrapperNativeContextMenuProvider {
 	private function updateOverMultiSelectionOption(event:Event):Void
 	{
 		var contextMenuItem:Dynamic = event.target;
-		contextMenuItem.enabled = Std.downcast(contextMenuOwner.parent.parent, TreeView).selectedItems.length == 1;
+		contextMenuItem.enabled = treeView.selectedFiles.length == 1;
 		if (contextMenuItem.enabled) contextMenuItem.addEventListener(Event.SELECT, redispatch, false, 0, true);
 	}
 		
 	private function redispatch(event:Event):Void
 	{
-		contextMenuOwner.dispatchEvent(
+		treeView.dispatchEvent(
 			getNewTreeMenuItemEvent(event)
 		);
 	}
 		
 	private function redispatchNew(event:Event):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
 		if (event.target.hasOwnProperty("data") && event.target.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.NEW;
+			e.label = ProjectTreeContextMenuItem.NEW;
 			e.extra = event.target.data;
 		}
 		
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 		
 	private function redispatchOpenWith(event:Event):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
 		if (event.target.hasOwnProperty("data") && event.target.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.OPEN_WITH;
+			e.label = ProjectTreeContextMenuItem.OPEN_WITH;
 			e.extra = event.target.data;
 		}
 		
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 
 	private function redispatchOpenInTerminal(event:Event):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
 		if (event.target.hasOwnProperty("data") && event.target.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL;
+			e.label = ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL;
 			e.extra = event.target.data;
 		}
 
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 		
-	private function getNewTreeMenuItemEvent(event:Event):TreeMenuItemEvent
+	private function getNewTreeMenuItemEvent(event:Event):ProjectTreeViewMenuItemEvent
 	{
 		var type:String = (event.target is flash.ui.ContextMenuItem) ? event.target.caption : event.target.label;
-		var e:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, 
+		var e:ProjectTreeViewMenuItemEvent = new ProjectTreeViewMenuItemEvent(ProjectTreeViewMenuItemEvent.CONTEXT_MENU_ITEM_SELECTED, 
 			type, 
-			cast(contextMenuOwner.data, FileWrapper));
-		e.renderer = contextMenuOwner;
+			cast(itemRenderer.data, FileWrapper).file);
 		return e;
 	}
 }

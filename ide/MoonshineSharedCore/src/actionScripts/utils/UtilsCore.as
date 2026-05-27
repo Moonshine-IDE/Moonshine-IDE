@@ -428,8 +428,16 @@ package actionScripts.utils
 		 * Fine a fileWrapper object
 		 * by a fileLocation object
 		 */
-		public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper
+		public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation, updateChildren:Boolean = false):FileWrapper
 		{
+			if (!updateChildren && current.children == null)
+			{
+				return current;
+			}
+			if (updateChildren && current.file.fileBridge.isDirectory)
+			{
+				current.updateChildren();
+			}
 			// Recurse-find filewrapper child
 			for each (var child:FileWrapper in current.children)
 			{
@@ -440,8 +448,9 @@ package actionScripts.utils
 					{
 						return child;
 					}
-					if (child.children) {
-						return findFileWrapperAgainstFileLocation(child, target);
+					if (child.file.fileBridge.isDirectory)
+					{
+						return findFileWrapperAgainstFileLocation(child, target, updateChildren);
 					}
 
 					break;

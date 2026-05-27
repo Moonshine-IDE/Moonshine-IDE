@@ -32,7 +32,7 @@
 
 package actionScripts.ui.renderers;
 
-import actionScripts.events.TreeMenuItemEvent;
+import moonshine.ui.project.ProjectTreeView;
 import actionScripts.interfaces.IExternalEditorVO;
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -48,19 +48,22 @@ import feathers.controls.Menu;
 import feathers.controls.TreeView;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.events.MenuEvent;
+import moonshine.events.ProjectTreeViewMenuItemEvent;
 import moonshine.ui.renderers.ProjectTreeViewItemRenderer;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;
 
 class FileWrapperFeathersContextMenuProvider {
-	private var contextMenuOwner:ProjectTreeViewItemRenderer;
+	private var treeView:ProjectTreeView;
+	private var itemRenderer:ProjectTreeViewItemRenderer;
 	private var model:IDEModel = IDEModel.getInstance();
 	private var dataProvider:ArrayHierarchicalCollection<MenuItem>;
 
-	public function new(target:ProjectTreeViewItemRenderer) {
-		contextMenuOwner = target;
-		contextMenuOwner.feathersContextMenuFactory = provide;
+	public function new(itemRenderer:ProjectTreeViewItemRenderer, treeView:ProjectTreeView) {
+		itemRenderer.feathersContextMenuFactory = provide;
+		this.itemRenderer = itemRenderer;
+		this.treeView = treeView;
 	}
 
 	private function getContextMenuItem(text:String, ?triggerListener:(Dynamic) -> Void, ?displayingListener:(MenuItem) -> Void):MenuItem {
@@ -72,7 +75,7 @@ class FileWrapperFeathersContextMenuProvider {
 	}
 	
 	public function provide(data:Dynamic):Menu {
-		var fw:FileWrapper = Std.downcast(contextMenuOwner.data, FileWrapper);
+		var fw:FileWrapper = Std.downcast(itemRenderer.data, FileWrapper);
 		if (fw == null)
 		{
 			return null;
@@ -81,7 +84,7 @@ class FileWrapperFeathersContextMenuProvider {
 
 		var menu = new Menu();
 		menu.addEventListener(MenuEvent.ITEM_TRIGGER, event -> {
-			var item = (cast event.state.data : MenuItem);
+			var item:MenuItem = event.state.data;
 			if (item.triggerListener != null) {
 				item.triggerListener(event);
 			}
@@ -91,7 +94,7 @@ class FileWrapperFeathersContextMenuProvider {
 			var needsUpdate = false;
 			var length = menu.dataProvider.getLength();
 			for (i in 0...length) {
-				var item:MenuItem = cast menu.dataProvider.get([i]);
+				var item:MenuItem = menu.dataProvider.get([i]);
 				if (item.displayingListener != null) {
 					item.displayingListener(item);
 					needsUpdate = true;
@@ -274,19 +277,19 @@ class FileWrapperFeathersContextMenuProvider {
 	{
 		var items:Array<MenuItem> = [];
 		
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
 		}
 
-		var editors:Array<IExternalEditorVO> = cast model.flexCore.getExternalEditors().source;
+		var editors:Array<IExternalEditorVO> = model.flexCore.getExternalEditors().source;
 		for (editor in editors)
 		{
 			var isFileTypeAccessible:Bool = (editor.fileTypes == null || editor.fileTypes.length == 0);
 			if (!isFileTypeAccessible)
 			{
-				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(contextMenuOwner.data, FileWrapper).file.fileBridge.extension) != -1);
+				isFileTypeAccessible = (editor.fileTypes.indexOf(Std.downcast(itemRenderer.data, FileWrapper).file.fileBridge.extension) != -1);
 			}
 
 			var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
@@ -344,7 +347,7 @@ class FileWrapperFeathersContextMenuProvider {
 		var items:Array<MenuItem> = [];
 
 		var isVagrantAvailable:Bool = UtilsCore.isVagrantAvailable();
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -377,7 +380,7 @@ class FileWrapperFeathersContextMenuProvider {
 	{
 		var items:Array<MenuItem> = [];
 
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(contextMenuOwner.data, FileWrapper));
+		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(Std.downcast(itemRenderer.data, FileWrapper));
 		if (activeProject != null)
 		{
 			model.activeProject = activeProject;
@@ -425,62 +428,61 @@ class FileWrapperFeathersContextMenuProvider {
 		
 	private function updateOverMultiSelectionOption(contextMenuItem:MenuItem):Void
 	{
-		contextMenuItem.enabled = Std.downcast(contextMenuOwner.parent.parent, TreeView).selectedItems.length == 1;
+		contextMenuItem.enabled = treeView.selectedFiles.length == 1;
 	}
 		
 	private function redispatch(event:MenuEvent):Void
 	{
-		contextMenuOwner.dispatchEvent(
+		treeView.dispatchEvent(
 			getNewTreeMenuItemEvent(event)
 		);
 	}
 		
 	private function redispatchNew(event:MenuEvent):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
-		var menuItem:MenuItem = cast event.state.data;
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var menuItem:MenuItem = event.state.data;
 		if (menuItem.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.NEW;
+			e.label = ProjectTreeContextMenuItem.NEW;
 			e.extra = menuItem.data;
 		}
 		
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 		
 	private function redispatchOpenWith(event:MenuEvent):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
-		var menuItem:MenuItem = cast event.state.data;
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var menuItem:MenuItem = event.state.data;
 		if (menuItem.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.OPEN_WITH;
+			e.label = ProjectTreeContextMenuItem.OPEN_WITH;
 			e.extra = menuItem.data;
 		}
 		
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 
 	private function redispatchOpenInTerminal(event:MenuEvent):Void
 	{
-		var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
-		var menuItem:MenuItem = cast event.state.data;
+		var e:ProjectTreeViewMenuItemEvent = getNewTreeMenuItemEvent(event);
+		var menuItem:MenuItem = event.state.data;
 		if (menuItem.data != null)
 		{
-			e.menuLabel = ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL;
+			e.label = ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL;
 			e.extra = menuItem.data;
 		}
 
-		contextMenuOwner.dispatchEvent(e);
+		treeView.dispatchEvent(e);
 	}
 		
-	private function getNewTreeMenuItemEvent(event:MenuEvent):TreeMenuItemEvent
+	private function getNewTreeMenuItemEvent(event:MenuEvent):ProjectTreeViewMenuItemEvent
 	{
 		var type:String = event.state.text;
-		var e:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, 
+		var e:ProjectTreeViewMenuItemEvent = new ProjectTreeViewMenuItemEvent(ProjectTreeViewMenuItemEvent.CONTEXT_MENU_ITEM_SELECTED, 
 			type, 
-			cast(contextMenuOwner.data, FileWrapper));
-		e.renderer = contextMenuOwner;
+			cast(itemRenderer.data, FileWrapper).file);
 		return e;
 	}
 }

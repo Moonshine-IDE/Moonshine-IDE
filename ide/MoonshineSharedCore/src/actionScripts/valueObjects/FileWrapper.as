@@ -294,7 +294,7 @@ package actionScripts.valueObjects
 
         public function containsFile(file:FileLocation):Boolean
         {
-            if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
+            if (file.fileBridge.nativePath.indexOf(nativePath + file.fileBridge.separator) == 0) return true;
             return false;
         }
 
