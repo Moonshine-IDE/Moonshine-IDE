@@ -299,7 +299,9 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 	}
 
 	private function populateContextMenu():Void {
+		#if flash
 		contextMenu = nativeContextMenuFactory != null ? nativeContextMenuFactory(data) : null;
+		#end
 	}
 
 	private function projectTreeViewItemRenderer_rightClickHandler(event:MouseEvent):Void {
