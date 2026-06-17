@@ -33,9 +33,10 @@ package moonshine.events;
 
 import actionScripts.factory.FileLocation;
 import openfl.events.Event;
+import openfl.events.EventType;
 
 class ProjectTreeViewMenuItemEvent extends Event {
-	public static final CONTEXT_MENU_ITEM_SELECTED:String = "contextMenuItemSelected";
+	public static final CONTEXT_MENU_ITEM_SELECTED:EventType<ProjectTreeViewMenuItemEvent> = "contextMenuItemSelected";
 
 	public var label:String;
 	public var file:FileLocation;

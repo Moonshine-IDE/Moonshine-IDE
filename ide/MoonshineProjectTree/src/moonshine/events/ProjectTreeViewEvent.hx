@@ -33,13 +33,14 @@ package moonshine.events;
 
 import actionScripts.factory.FileLocation;
 import openfl.events.Event;
+import openfl.events.EventType;
 
 class ProjectTreeViewEvent extends Event {
-	public static final EVENT_WORKSPACE_CHANGE:String = "workspaceChange";
-	public static final EVENT_SCROLL_FROM_SOURCE:String = "scrollFromSource";
-	public static final EVENT_OPEN_FILE:String = "openFile";
-	public static final EVENT_SAVE_TO_OPENED_ITEMS:String = "saveToOpenedItems";
-	public static final EVENT_REMOVE_FROM_OPENED_ITEMS:String = "removeFromOpenedItems";
+	public static final EVENT_WORKSPACE_CHANGE:EventType<ProjectTreeViewEvent> = "workspaceChange";
+	public static final EVENT_SCROLL_FROM_SOURCE:EventType<ProjectTreeViewEvent> = "scrollFromSource";
+	public static final EVENT_OPEN_FILE:EventType<ProjectTreeViewEvent> = "openFile";
+	public static final EVENT_SAVE_TO_OPENED_ITEMS:EventType<ProjectTreeViewEvent> = "saveToOpenedItems";
+	public static final EVENT_REMOVE_FROM_OPENED_ITEMS:EventType<ProjectTreeViewEvent> = "removeFromOpenedItems";
 
 	public var file:FileLocation;
 

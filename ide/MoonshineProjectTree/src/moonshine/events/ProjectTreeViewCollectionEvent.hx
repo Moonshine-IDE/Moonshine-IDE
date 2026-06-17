@@ -38,9 +38,10 @@ package moonshine.events;
 
 import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
 import openfl.events.Event;
+import openfl.events.EventType;
 
 class ProjectTreeViewCollectionEvent extends Event {
-	public static final DIRECTORY_LISTING_RECEIVED:String = "directoryListingReceived";
+	public static final DIRECTORY_LISTING_RECEIVED:EventType<ProjectTreeViewCollectionEvent> = "directoryListingReceived";
 
 	public var fileWrapper:ProjectTreeViewFileWrapper;
 
