@@ -190,7 +190,6 @@ class ProjectTreeView extends LayoutGroup {
 	**/
 	public var initializeItemRendererCallback:(ProjectTreeViewItemRenderer) -> Void;
 
-	public var isActiveFileCallback:(FileLocation) -> Bool;
 	public var isSourceFolderCallback:(FileLocation) -> Bool;
 
 	public function new() {
@@ -737,5 +736,9 @@ class ProjectTreeView extends LayoutGroup {
 			}
 		}
 		return current;
+	}
+
+	private function isActiveFileCallback(file:FileLocation):Bool {
+		return _activeFile != null && _activeFile.fileBridge.nativePath == file.fileBridge.nativePath;
 	}
 }
