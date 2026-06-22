@@ -494,14 +494,10 @@ class ProjectTreeViewCollection extends EventDispatcher implements IHierarchical
 	}
 
 	private function isSourceFolder(wrapper:ProjectTreeViewFileWrapper, project:ProjectVO):Bool {
-		if (project == null || (!Reflect.hasField(project, "sourceFolder") && !Reflect.hasField(project, "get_sourceFolder"))) {
+		if (project == null || project.sourceFolder == null) {
 			return false;
 		}
-		var sourceFolder:FileLocation = Std.downcast(Reflect.getProperty(project, "sourceFolder"), FileLocation);
-		if (sourceFolder == null) {
-			return false;
-		}
-		return wrapper.nativePath == sourceFolder.fileBridge.nativePath;
+		return wrapper.nativePath == project.sourceFolder.fileBridge.nativePath;
 	}
 
 	private function removeFromCache(item:ProjectTreeViewFileWrapper, items:Array<ProjectTreeViewFileWrapper>):Void {

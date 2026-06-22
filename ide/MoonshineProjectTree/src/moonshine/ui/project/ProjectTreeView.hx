@@ -190,8 +190,6 @@ class ProjectTreeView extends LayoutGroup {
 	**/
 	public var initializeItemRendererCallback:(ProjectTreeViewItemRenderer) -> Void;
 
-	public var isSourceFolderCallback:(FileLocation) -> Bool;
-
 	public function new() {
 		super();
 	}
@@ -222,7 +220,6 @@ class ProjectTreeView extends LayoutGroup {
 			var itemRenderer:ProjectTreeViewItemRenderer = new ProjectTreeViewItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
 			itemRenderer.isActiveFileCallback = isActiveFileCallback;
-			itemRenderer.isSourceFolderCallback = isSourceFolderCallback;
 			if (initializeItemRendererCallback != null) {
 				initializeItemRendererCallback(itemRenderer);
 			}
@@ -738,7 +735,7 @@ class ProjectTreeView extends LayoutGroup {
 		return current;
 	}
 
-	private function isActiveFileCallback(file:FileLocation):Bool {
-		return _activeFile != null && _activeFile.fileBridge.nativePath == file.fileBridge.nativePath;
+	private function isActiveFileCallback(wrapper:ProjectTreeViewFileWrapper):Bool {
+		return _activeFile != null && _activeFile.fileBridge.nativePath == wrapper.file.fileBridge.nativePath;
 	}
 }

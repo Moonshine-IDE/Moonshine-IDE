@@ -79,8 +79,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 
 	public var feathersContextMenuFactory:(data:Dynamic) -> Menu;
 
-	public var isActiveFileCallback:(FileLocation) -> Bool;
-	public var isSourceFolderCallback:(FileLocation) -> Bool;
+	public var isActiveFileCallback:(ProjectTreeViewFileWrapper) -> Bool;
 
 	private var _currentIsOpenIcon:DisplayObject = null;
 	private var _currentIsSourceFolderIcon:DisplayObject = null;
@@ -218,16 +217,13 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 				// Show lil' dot if we are the currently opened file
 				var isActiveFile:Bool = false;
 				if (isActiveFileCallback != null) {
-					isActiveFile = isActiveFileCallback(fw.file);
+					isActiveFile = isActiveFileCallback(fw);
 				}
 				isOpenIcon.visible = isActiveFile;
 			}
 
 			if (isSourceFolderIcon != null) {
 				var isSourceFolder = fw.isSourceFolder;
-				if (!isSourceFolder && isSourceFolderCallback != null) {
-					isSourceFolder = isSourceFolderCallback(fw.file);
-				}
 				isSourceFolderIcon.visible = isSourceFolder;
 			}
 

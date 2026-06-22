@@ -155,7 +155,6 @@ package actionScripts.plugin.project
 			treeView.projectTreeCookiePropertyNameKey = PROPERTY_NAME_KEY;
 			treeView.projectTreeCookiePropertyNameKeyValue = PROPERTY_NAME_KEY_VALUE;
 			treeView.initializeItemRendererCallback = onTreeViewInitItemRenderer;
-			treeView.isSourceFolderCallback = onTreeViewIsSourceFolderRequest;
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
 
@@ -705,24 +704,6 @@ package actionScripts.plugin.project
 			isLoadingIcon.visible = false;
 			isLoadingIcon.width = isLoadingIcon.height = 10;
 			itemRenderer.isLoadingIcon = isLoadingIcon;
-		}
-
-		private function onTreeViewIsSourceFolderRequest(file:FileLocation):Boolean
-		{
-			var foundProject:ProjectVO = null;
-			for each (var currentProject:ProjectVO in model.projects)
-			{
-				if (currentProject.projectFolder.containsFile(file))
-				{
-					foundProject = currentProject;
-					break;
-				}
-			}
-			if (foundProject == null || foundProject.sourceFolder == null)
-			{
-				return false;
-			}
-			return foundProject.sourceFolder.fileBridge.nativePath == file.fileBridge.nativePath;
 		}
 
 		private function onTreeViewWorkspaceChange(event:Event):void
