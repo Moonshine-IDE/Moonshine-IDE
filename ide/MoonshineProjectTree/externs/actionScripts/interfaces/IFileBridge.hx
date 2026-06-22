@@ -36,28 +36,28 @@ import actionScripts.factory.FileLocation;
 
 extern interface IFileBridge {
 	@:flash.property
-	public var nativePath(default, default):String;
+	public var nativePath(get, set):String;
 
 	@:flash.property
-	public var name(default, default):String;
+	public var name(get, set):String;
 
 	@:flash.property
-	public var parent(default, null):FileLocation;
+	public var parent(get, never):FileLocation;
 
 	@:flash.property
-	public var exists(default, null):Bool;
+	public var exists(get, never):Bool;
 
 	@:flash.property
-	public var isDirectory(default, default):Bool;
+	public var isDirectory(get, never):Bool;
 
 	@:flash.property
-	public var isHidden(default, default):Bool;
+	public var isHidden(get, never):Bool;
 
 	@:flash.property
-	public var extension(default, null):String;
+	public var extension(get, never):String;
 
 	@:flash.property
-	public var separator(default, null):String;
+	public var separator(get, never):String;
 
 	function getDirectoryListing():Array<Dynamic>;
 
