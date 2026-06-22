@@ -102,7 +102,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 		Optional icon to indicate that the folder contents are loading.
 	**/
 	@:style
-	public var isLoadingIcon:MovieClip = null;
+	public var isLoadingIcon:DisplayObject = null;
 
 	private var _rootTextFormat:TextFormat;
 	private var _deletingTextFormat:TextFormat;
@@ -189,12 +189,10 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 			isOpenIcon.y = (actualHeight - isOpenIcon.height) / 2.0;
 		}
 		if (isSourceFolderIcon != null) {
-			isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 			isSourceFolderIcon.x = textField.x - (this.icon != null ? 44 : 29);
 			isSourceFolderIcon.y = (actualHeight - isSourceFolderIcon.height) / 2.0;
 		}
 		if (isLoadingIcon != null) {
-			isLoadingIcon.width = isLoadingIcon.height = 10;
 			isLoadingIcon.x = textField.x - isLoadingIcon.width - 10;
 			isLoadingIcon.y = (actualHeight - isLoadingIcon.height) / 2.0;
 		}
@@ -236,10 +234,14 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 			if (isLoadingIcon != null) {
 				if (fw.isWorking) {
 					isLoadingIcon.visible = true;
-					isLoadingIcon.play();
+					if ((isLoadingIcon is MovieClip)) {
+						(cast isLoadingIcon : MovieClip).play();
+					}
 				} else {
 					isLoadingIcon.visible = false;
-					isLoadingIcon.stop();
+					if ((isLoadingIcon is MovieClip)) {
+						(cast isLoadingIcon : MovieClip).stop();
+					}
 				}
 			}
 		} else {
@@ -251,7 +253,9 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 			}
 			if (isLoadingIcon != null) {
 				isLoadingIcon.visible = false;
-				isLoadingIcon.stop();
+				if ((isLoadingIcon is MovieClip)) {
+					(cast isLoadingIcon : MovieClip).stop();
+				}
 			}
 		}
 	}

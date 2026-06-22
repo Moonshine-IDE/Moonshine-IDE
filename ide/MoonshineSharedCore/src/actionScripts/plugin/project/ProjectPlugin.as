@@ -697,11 +697,13 @@ package actionScripts.plugin.project
 			var isSourceFolderIcon:BitmapImage = new BitmapImage();
 			isSourceFolderIcon.toolTip = "Source folder";
 			isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon().bitmapData;
+			isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 			itemRenderer.isSourceFolderIcon = isSourceFolderIcon;
 
 			var isLoadingIcon:MovieClip = new ConstantsCoreVO.loaderIcon();
 			isLoadingIcon.stop();
 			isLoadingIcon.visible = false;
+			isLoadingIcon.width = isLoadingIcon.height = 10;
 			itemRenderer.isLoadingIcon = isLoadingIcon;
 		}
 
