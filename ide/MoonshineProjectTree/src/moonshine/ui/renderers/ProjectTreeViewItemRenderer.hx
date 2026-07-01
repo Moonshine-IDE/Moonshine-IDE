@@ -32,7 +32,6 @@
 package moonshine.ui.renderers;
 
 import moonshine.data.ProjectTreeViewCollection.ProjectTreeViewFileWrapper;
-import actionScripts.factory.FileLocation;
 import feathers.controls.Menu;
 import feathers.controls.TreeView;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
@@ -41,12 +40,16 @@ import feathers.core.IValidating;
 import feathers.text.TextFormat;
 import openfl.display.DisplayObject;
 import openfl.display.MovieClip;
+import openfl.events.Event;
 import openfl.events.MouseEvent;
 
 class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements ITreeViewItemRenderer {
 	public function new() {
 		super();
+		mouseChildren = false;
 		addEventListener(MouseEvent.RIGHT_CLICK, projectTreeViewItemRenderer_rightClickHandler);
+		addEventListener(Event.ADDED_TO_STAGE, projectTreeViewItemRenderer_addedToStageHandler);
+		addEventListener(Event.REMOVED_FROM_STAGE, projectTreeViewItemRenderer_removedFromStageHandler);
 	}
 
 	private var _location:Array<Int>;
@@ -304,12 +307,32 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 		#end
 	}
 
+	private function projectTreeViewItemRenderer_addedToStageHandler(event:Event):Void {
+		if (stage != null && stage.window != null) {
+			stage.window.onMouseDown.add(projectTreeViewItemRenderer_window_onMouseDown);
+		}
+	}
+
+	private function projectTreeViewItemRenderer_removedFromStageHandler(event:Event):Void {
+		if (stage != null && stage.window != null) {
+			stage.window.onMouseDown.remove(projectTreeViewItemRenderer_window_onMouseDown);
+		}
+	}
+
+	private function projectTreeViewItemRenderer_window_onMouseDown(x:Float, y:Float, button:Int):Void {
+		if (stage == null || stage.window == null) {
+			return;
+		}
+		if (button == 2 && hitTestPoint(x, y)) {
+			// need to prevent context menu from displaying on some targets
+			stage.window.onMouseDown.cancel();
+		}
+	}
+
 	private function projectTreeViewItemRenderer_rightClickHandler(event:MouseEvent):Void {
 		if (nativeContextMenuFactory != null || feathersContextMenuFactory == null) {
 			return;
 		}
-
-		event.preventDefault();
 
 		var menu:Menu = feathersContextMenuFactory(data);
 		menu.showAtPosition(stage.mouseX, stage.mouseY, this);
