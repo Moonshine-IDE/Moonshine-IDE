@@ -308,17 +308,22 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 	}
 
 	private function projectTreeViewItemRenderer_addedToStageHandler(event:Event):Void {
+		#if !flash
 		if (stage != null && stage.window != null) {
 			stage.window.onMouseDown.add(projectTreeViewItemRenderer_window_onMouseDown);
 		}
+		#end
 	}
 
 	private function projectTreeViewItemRenderer_removedFromStageHandler(event:Event):Void {
+		#if !flash
 		if (stage != null && stage.window != null) {
 			stage.window.onMouseDown.remove(projectTreeViewItemRenderer_window_onMouseDown);
 		}
+		#end
 	}
 
+	#if !flash
 	private function projectTreeViewItemRenderer_window_onMouseDown(x:Float, y:Float, button:Int):Void {
 		if (stage == null || stage.window == null) {
 			return;
@@ -328,6 +333,7 @@ class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements IT
 			stage.window.onMouseDown.cancel();
 		}
 	}
+	#end
 
 	private function projectTreeViewItemRenderer_rightClickHandler(event:MouseEvent):Void {
 		if (nativeContextMenuFactory != null || feathersContextMenuFactory == null) {
